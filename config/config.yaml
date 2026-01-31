@@ -132,7 +132,7 @@ rss:
 #    • 适用场景：避免重复信息干扰
 # ===============================================================
 report:
-  mode: "current"                     # 可选: daily | current | incremental
+  mode: "incremental"                     # 可选: daily | current | incremental
   display_mode: "keyword"             # 分组维度: keyword | platform
                                       # keyword: 按关键词分组显示（默认）
                                       # platform: 按平台/来源分组显示
@@ -140,7 +140,7 @@ report:
   # 关键词组排序方式（仅 display_mode: keyword 时生效）
   # true: 按 frequency_words.txt 中的定义顺序排列
   # false: 按匹配到的热点条数排序（条数多的在前）
-  sort_by_position_first: false
+  sort_by_position_first: true
 
   rank_threshold: 5                   # 排名高亮阈值
 
@@ -165,11 +165,11 @@ display:
   #   1. 在此列表中
   #   2. 下方 regions 中对应开关为 true
   region_order:
+    - ai_analysis                     # 5️⃣ AI 分析区域
     - new_items                       # 1️⃣ 新增热点区域
     - hotlist                         # 2️⃣ 热榜区域（关键词匹配）
     - rss                             # 3️⃣ RSS 订阅区域
     - standalone                      # 4️⃣ 独立展示区
-    - ai_analysis                     # 5️⃣ AI 分析区域
 
   # 推送区域开关
   # 控制各区域是否启用（配合 region_order 使用）
