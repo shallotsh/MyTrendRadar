@@ -488,6 +488,15 @@ def render_html_content(
                 .news-item { gap: 8px; }
                 .new-item { gap: 8px; }
                 .news-number { width: 20px; height: 20px; font-size: 12px; }
+
+                /* AI 分析区块响应式样式 */
+                .ai-section { padding: 16px; margin-top: 24px; }
+                .ai-section-title { font-size: 16px; }
+                .ai-toggle-icon { width: 22px; height: 22px; }
+                .ai-block { padding: 12px; margin-bottom: 12px; }
+                .ai-block-title { font-size: 13px; }
+                .ai-block-content { font-size: 13px; }
+
                 .save-buttons {
                     position: static;
                     margin-bottom: 16px;
@@ -679,8 +688,43 @@ def render_html_content(
             .ai-section-header {
                 display: flex;
                 align-items: center;
+                justify-content: space-between;
+                cursor: pointer;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .ai-header-left {
+                display: flex;
+                align-items: center;
                 gap: 10px;
-                margin-bottom: 20px;
+                flex: 1;
+            }
+
+            .ai-toggle-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                border-radius: 6px;
+                background: rgba(14, 165, 233, 0.1);
+                color: #0ea5e9;
+                transition: all 0.3s ease;
+                flex-shrink: 0;
+            }
+
+            .ai-toggle-icon:hover {
+                background: rgba(14, 165, 233, 0.2);
+                transform: scale(1.05);
+            }
+
+            .ai-toggle-icon svg {
+                transition: transform 0.3s ease;
+            }
+
+            .ai-section.collapsed .ai-toggle-icon svg {
+                transform: rotate(-90deg);
             }
 
             .ai-section-title {
@@ -696,6 +740,31 @@ def render_html_content(
                 font-weight: 600;
                 padding: 3px 8px;
                 border-radius: 4px;
+                flex-shrink: 0;
+            }
+
+            .ai-content-wrapper {
+                max-height: 2000px;
+                overflow: hidden;
+                transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+                opacity: 1;
+            }
+
+            .ai-section.collapsed .ai-content-wrapper {
+                max-height: 0;
+                opacity: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            /* 强制展开模式（用于保存图片时） */
+            .ai-section.force-expanded .ai-content-wrapper {
+                max-height: none !important;
+                opacity: 1 !important;
+            }
+
+            .ai-section.force-expanded .ai-toggle-icon svg {
+                transform: rotate(0deg) !important;
             }
 
             .ai-block {
@@ -1397,6 +1466,10 @@ def render_html_content(
                     // 等待页面稳定
                     await new Promise(resolve => setTimeout(resolve, 200));
 
+                    // 展开分析区块并强制展开
+                    expandAISection();
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
                     // 截图前隐藏按钮
                     const buttons = document.querySelector('.save-buttons');
                     buttons.style.visibility = 'hidden';
@@ -1426,6 +1499,7 @@ def render_html_content(
                     });
 
                     buttons.style.visibility = 'visible';
+                    restoreAISection();
 
                     const link = document.createElement('a');
                     const now = new Date();
@@ -1448,6 +1522,7 @@ def render_html_content(
                 } catch (error) {
                     const buttons = document.querySelector('.save-buttons');
                     buttons.style.visibility = 'visible';
+                    restoreAISection();
                     button.textContent = '保存失败';
                     setTimeout(() => {
                         button.textContent = originalText;
@@ -1592,6 +1667,10 @@ def render_html_content(
 
                     button.textContent = `生成中 (0/${segments.length})...`;
 
+                    // 展开分析区块并强制展开
+                    expandAISection();
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
                     // 隐藏保存按钮
                     const buttons = document.querySelector('.save-buttons');
                     buttons.style.visibility = 'hidden';
@@ -1652,6 +1731,7 @@ def render_html_content(
 
                     // 恢复按钮显示
                     buttons.style.visibility = 'visible';
+                    restoreAISection();
 
                     // 下载所有图片
                     const now = new Date();
@@ -1679,6 +1759,7 @@ def render_html_content(
                     console.error('分段保存失败:', error);
                     const buttons = document.querySelector('.save-buttons');
                     buttons.style.visibility = 'visible';
+                    restoreAISection();
                     button.textContent = '保存失败';
                     setTimeout(() => {
                         button.textContent = originalText;
@@ -1687,8 +1768,39 @@ def render_html_content(
                 }
             }
 
+            // AI 分析区块折叠/展开功能
+            function toggleAISection() {
+                const aiSection = document.querySelector('.ai-section');
+                if (aiSection) {
+                    aiSection.classList.toggle('collapsed');
+                }
+            }
+
+            // 确保保存图片时 AI 区块展开
+            function expandAISection() {
+                const aiSection = document.querySelector('.ai-section');
+                if (aiSection) {
+                    aiSection.classList.remove('collapsed');
+                    aiSection.classList.add('force-expanded');
+                }
+            }
+
+            // 恢复 AI 区块状态
+            function restoreAISection() {
+                const aiSection = document.querySelector('.ai-section');
+                if (aiSection) {
+                    aiSection.classList.remove('force-expanded');
+                }
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 window.scrollTo(0, 0);
+
+                // 初始化 AI 区块 - 默认展开
+                const aiSection = document.querySelector('.ai-section');
+                if (aiSection && !aiSection.classList.contains('collapsed')) {
+                    // 默认展开，不需要额外操作
+                }
             });
         </script>
     </body>

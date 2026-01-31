@@ -284,56 +284,65 @@ def render_ai_analysis_html_rich(result: AIAnalysisResult) -> str:
 
     ai_html = """
                 <div class="ai-section">
-                    <div class="ai-section-header">
-                        <div class="ai-section-title">✨ AI 热点分析</div>
+                    <div class="ai-section-header ai-toggle-header" onclick="toggleAISection()">
+                        <div class="ai-header-left">
+                            <div class="ai-toggle-icon">
+                                <svg class="ai-icon-expanded" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ai-section-title">✨ AI 热点分析</div>
+                        </div>
                         <span class="ai-section-badge">AI</span>
-                    </div>"""
+                    </div>
+                    <div class="ai-content-wrapper" id="ai-content-wrapper">"""
 
     if result.core_trends:
         content = _format_list_content(result.core_trends)
         content_html = _escape_html(content).replace("\n", "<br>")
         ai_html += f"""
-                    <div class="ai-block">
-                        <div class="ai-block-title">核心热点态势</div>
-                        <div class="ai-block-content">{content_html}</div>
-                    </div>"""
+                        <div class="ai-block">
+                            <div class="ai-block-title">核心热点态势</div>
+                            <div class="ai-block-content">{content_html}</div>
+                        </div>"""
 
     if result.sentiment_controversy:
         content = _format_list_content(result.sentiment_controversy)
         content_html = _escape_html(content).replace("\n", "<br>")
         ai_html += f"""
-                    <div class="ai-block">
-                        <div class="ai-block-title">舆论风向争议</div>
-                        <div class="ai-block-content">{content_html}</div>
-                    </div>"""
+                        <div class="ai-block">
+                            <div class="ai-block-title">舆论风向争议</div>
+                            <div class="ai-block-content">{content_html}</div>
+                        </div>"""
 
     if result.signals:
         content = _format_list_content(result.signals)
         content_html = _escape_html(content).replace("\n", "<br>")
         ai_html += f"""
-                    <div class="ai-block">
-                        <div class="ai-block-title">异动与弱信号</div>
-                        <div class="ai-block-content">{content_html}</div>
-                    </div>"""
+                        <div class="ai-block">
+                            <div class="ai-block-title">异动与弱信号</div>
+                            <div class="ai-block-content">{content_html}</div>
+                        </div>"""
 
     if result.rss_insights:
         content = _format_list_content(result.rss_insights)
         content_html = _escape_html(content).replace("\n", "<br>")
         ai_html += f"""
-                    <div class="ai-block">
-                        <div class="ai-block-title">RSS 深度洞察</div>
-                        <div class="ai-block-content">{content_html}</div>
-                    </div>"""
+                        <div class="ai-block">
+                            <div class="ai-block-title">RSS 深度洞察</div>
+                            <div class="ai-block-content">{content_html}</div>
+                        </div>"""
 
     if result.outlook_strategy:
         content = _format_list_content(result.outlook_strategy)
         content_html = _escape_html(content).replace("\n", "<br>")
         ai_html += f"""
-                    <div class="ai-block">
-                        <div class="ai-block-title">研判策略建议</div>
-                        <div class="ai-block-content">{content_html}</div>
-                    </div>"""
+                        <div class="ai-block">
+                            <div class="ai-block-title">研判策略建议</div>
+                            <div class="ai-block-content">{content_html}</div>
+                        </div>"""
 
     ai_html += """
+                    </div>
                 </div>"""
     return ai_html

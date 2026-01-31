@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(pip show:*)",
-      "Bash(. .venv/bin/activate:*)"
+      "Bash(. .venv/bin/activate:*)",
+      "Bash(python3:*)"
     ]
   }
 }

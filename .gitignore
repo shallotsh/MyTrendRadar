@@ -4,3 +4,4 @@ output/
 .env
 .idea/
 docker/.env
+__pycache__/
