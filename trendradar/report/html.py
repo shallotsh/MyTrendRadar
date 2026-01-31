@@ -12,18 +12,45 @@ from trendradar.report.helpers import html_escape
 from trendradar.utils.time import convert_time_for_display
 from trendradar.ai.formatter import render_ai_analysis_html_rich
 
-# PWA 支持
-try:
-    from trendradar.report.pwa import get_pwa_head_html, get_pwa_body_html
-    PWA_SUPPORTED = True
-except ImportError:
-    PWA_SUPPORTED = False
+# PWA 支持（延迟导入，避免触发整个包的初始化）
+PWA_SUPPORTED = False
+_pwa_head_html_func = None
+_pwa_body_html_func = None
+
+
+def _init_pwa_support():
+    """初始化 PWA 支持（延迟加载）"""
+    global PWA_SUPPORTED, _pwa_head_html_func, _pwa_body_html_func
+    if _pwa_head_html_func is not None:
+        return
+
+    try:
+        # 使用 importlib 避免触发包初始化
+        import importlib.util
+        import sys
+        pwa_path = __file__.replace('/html.py', '/pwa/__init__.py')
+        spec = importlib.util.spec_from_file_location("trendradar.report.pwa", pwa_path)
+        pwa_module = importlib.util.module_from_spec(spec)
+        sys.modules['trendradar.report.pwa'] = pwa_module
+        spec.loader.exec_module(pwa_module)
+
+        _pwa_head_html_func = pwa_module.get_pwa_head_html
+        _pwa_body_html_func = pwa_module.get_pwa_body_html
+        PWA_SUPPORTED = True
+    except Exception:
+        PWA_SUPPORTED = False
 
 
 def _get_pwa_head_html(enable_pwa: bool = True) -> str:
     """获取 PWA 头部 HTML"""
-    if enable_pwa and PWA_SUPPORTED:
-        return get_pwa_head_html(
+    if not enable_pwa:
+        return ""
+
+    # 延迟初始化 PWA 支持
+    _init_pwa_support()
+
+    if PWA_SUPPORTED and _pwa_head_html_func:
+        return _pwa_head_html_func(
             app_name="TrendRadar",
             theme_color="#4f46e5",
             pwa_base_path="./pwa",

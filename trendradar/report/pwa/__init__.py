@@ -134,11 +134,12 @@ class PWASupport:
             with open(script_path, "r", encoding="utf-8") as f:
                 script_content = f.read()
         except Exception as e:
-            return f"<!-- PWA 安装引导脚本加载失败: {e} -->"
+            return "<!-- PWA 安装引导脚本加载失败: " + str(e) + " -->"
 
-        return f"""
+        # 使用字符串连接而不是 f-string，避免 script_content 中的 { } 被解析
+        return """
     <!-- PWA 添加到桌面引导 -->
-    <script>{script_content}</script>
+    <script>""" + script_content + """</script>
 """
 
     def get_update_prompt_html(self) -> str:
@@ -298,7 +299,7 @@ def get_pwa_head_html(
         pwa.get_manifest_link(),
         "",
         "    <!-- PWA Service Worker Registration -->",
-        f'<script>{pwa.get_sw_registration_script()}</script>',
+        "<script>" + pwa.get_sw_registration_script() + "</script>",
     ]
 
     if include_install_prompt:
