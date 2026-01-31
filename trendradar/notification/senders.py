@@ -168,7 +168,7 @@ def send_to_feishu(
 
         # 飞书 webhook 只显示 content.text，所有信息都整合到 text 中
         payload = {
-            "msg_type": "text",
+            "msg_type": "markdown",
             "content": {
                 "text": batch_content,
             },
