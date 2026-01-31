@@ -12,6 +12,25 @@ from trendradar.report.helpers import html_escape
 from trendradar.utils.time import convert_time_for_display
 from trendradar.ai.formatter import render_ai_analysis_html_rich
 
+# PWA 支持
+try:
+    from trendradar.report.pwa import get_pwa_head_html, get_pwa_body_html
+    PWA_SUPPORTED = True
+except ImportError:
+    PWA_SUPPORTED = False
+
+
+def _get_pwa_head_html(enable_pwa: bool = True) -> str:
+    """获取 PWA 头部 HTML"""
+    if enable_pwa and PWA_SUPPORTED:
+        return get_pwa_head_html(
+            app_name="TrendRadar",
+            theme_color="#4f46e5",
+            pwa_base_path="./pwa",
+            include_install_prompt=True
+        )
+    return ""
+
 
 def render_html_content(
     report_data: Dict,
@@ -27,6 +46,7 @@ def render_html_content(
     standalone_data: Optional[Dict] = None,
     ai_analysis: Optional[Any] = None,
     show_new_section: bool = True,
+    enable_pwa: bool = True,
 ) -> str:
     """渲染HTML内容
 
@@ -43,6 +63,7 @@ def render_html_content(
         standalone_data: 独立展示区数据（可选），包含 platforms 和 rss_feeds
         ai_analysis: AI 分析结果对象（可选），AIAnalysisResult 实例
         show_new_section: 是否显示新增热点区域
+        enable_pwa: 是否启用 PWA 功能（默认 True）
 
     Returns:
         渲染后的 HTML 字符串
@@ -52,13 +73,17 @@ def render_html_content(
     if region_order is None:
         region_order = default_region_order
 
-    html = """
+    # 获取 PWA 头部 HTML
+    pwa_head_html = _get_pwa_head_html(enable_pwa)
+
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>热点新闻分析</title>
+{pwa_head_html}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <style>
             * { box-sizing: border-box; }
