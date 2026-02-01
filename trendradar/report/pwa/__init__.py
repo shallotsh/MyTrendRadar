@@ -146,6 +146,198 @@ class PWASupport:
     <script>""" + script_content + """</script>
 """
 
+    def get_navigation_bar_html(self) -> str:
+        """
+        获取 PWA 导航栏（仅在 standalone 模式显示）
+
+        提供返回、主页、刷新功能，解决 standalone 模式下无法返回的问题
+
+        Returns:
+            HTML 字符串
+        """
+        return """
+    <!-- PWA 导航栏（仅 standalone 模式显示） -->
+    <nav id="pwa-navbar" class="pwa-navbar" style="display: none;">
+        <button class="pwa-nav-btn pwa-nav-back" onclick="PWANavigation.goBack()" aria-label="返回">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>返回</span>
+        </button>
+        <div class="pwa-nav-title">TrendRadar</div>
+        <div class="pwa-nav-actions">
+            <button class="pwa-nav-btn pwa-nav-refresh" onclick="PWANavigation.refresh()" aria-label="刷新">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6M1 20v-6h6"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+            </button>
+            <button class="pwa-nav-btn pwa-nav-home" onclick="PWANavigation.goHome()" aria-label="主页">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+    <style>
+        .pwa-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 9998;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pwa-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            min-width: 40px;
+            justify-content: center;
+        }
+        .pwa-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .pwa-nav-btn:active {
+            transform: scale(0.95);
+        }
+        .pwa-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .pwa-nav-back span {
+            font-size: 13px;
+        }
+        .pwa-nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            flex: 1;
+            text-align: center;
+            padding: 0 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .pwa-nav-actions {
+            display: flex;
+            gap: 8px;
+        }
+        /* 为页面内容添加顶部内边距，避免被导航栏遮挡 */
+        body.pwa-standalone {
+            padding-top: 56px;
+        }
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .pwa-navbar {
+                height: 52px;
+                padding: 0 12px;
+            }
+            .pwa-nav-btn {
+                padding: 6px 10px;
+            }
+            .pwa-nav-title {
+                font-size: 15px;
+                padding: 0 12px;
+            }
+        }
+    </style>
+    <script>
+        window.PWANavigation = (function() {
+            // 检测是否在 standalone 模式
+            function isStandalone() {
+                return window.matchMedia('(display-mode: standalone)').matches ||
+                       window.navigator.standalone === true ||
+                       document.referrer.includes('android-app://');
+            }
+
+            // 显示/隐藏导航栏
+            function toggleNavbar() {
+                const navbar = document.getElementById('pwa-navbar');
+                if (navbar) {
+                    if (isStandalone()) {
+                        navbar.style.display = 'flex';
+                        document.body.classList.add('pwa-standalone');
+                    } else {
+                        navbar.style.display = 'none';
+                        document.body.classList.remove('pwa-standalone');
+                    }
+                    updateBackButton();
+                }
+            }
+
+            // 更新返回按钮状态
+            function updateBackButton() {
+                const backBtn = document.querySelector('.pwa-nav-back');
+                if (backBtn) {
+                    backBtn.disabled = window.history.length <= 1;
+                }
+            }
+
+            // 返回
+            function goBack() {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // 如果没有历史记录，返回主页
+                    goHome();
+                }
+            }
+
+            // 返回主页
+            function goHome() {
+                window.location.href = '/';
+            }
+
+            // 刷新页面
+            function refresh() {
+                window.location.reload();
+            }
+
+            // 监听历史记录变化
+            window.addEventListener('popstate', updateBackButton);
+
+            // 初始化
+            function init() {
+                toggleNavbar();
+                // 监听 display mode 变化
+                window.matchMedia('(display-mode: standalone)').addEventListener('change', toggleNavbar);
+            }
+
+            // DOM 加载完成后初始化
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            return {
+                goBack: goBack,
+                goHome: goHome,
+                refresh: refresh,
+                isStandalone: isStandalone
+            };
+        })();
+    </script>
+"""
+
     def get_update_prompt_html(self) -> str:
         """
         获取更新提示组件 HTML
@@ -316,12 +508,14 @@ def get_pwa_head_html(
 
 
 def get_pwa_body_html(
+    include_nav_bar: bool = True,
     include_update_prompt: bool = False
 ) -> str:
     """
-    获取 PWA body 部分 HTML（更新提示等组件）
+    获取 PWA body 部分 HTML（导航栏、更新提示等组件）
 
     Args:
+        include_nav_bar: 是否包含导航栏（默认包含，解决 standalone 模式无法返回问题）
         include_update_prompt: 是否包含更新提示组件
 
     Returns:
@@ -329,10 +523,15 @@ def get_pwa_body_html(
     """
     pwa = PWASupport()
 
-    if include_update_prompt:
-        return pwa.get_update_prompt_html()
+    html_parts = []
 
-    return ""
+    if include_nav_bar:
+        html_parts.append(pwa.get_navigation_bar_html())
+
+    if include_update_prompt:
+        html_parts.append(pwa.get_update_prompt_html())
+
+    return "\n".join(html_parts) if html_parts else ""
 
 
 # 图标准备指南

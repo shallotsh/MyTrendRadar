@@ -59,6 +59,22 @@ def _get_pwa_head_html(enable_pwa: bool = True) -> str:
     return ""
 
 
+def _get_pwa_body_html(enable_pwa: bool = True) -> str:
+    """获取 PWA body HTML（导航栏等）"""
+    if not enable_pwa:
+        return ""
+
+    # 延迟初始化 PWA 支持
+    _init_pwa_support()
+
+    if PWA_SUPPORTED and _pwa_body_html_func:
+        return _pwa_body_html_func(
+            include_nav_bar=True,
+            include_update_prompt=False
+        )
+    return ""
+
+
 def render_html_content(
     report_data: Dict,
     total_titles: int,
@@ -102,6 +118,9 @@ def render_html_content(
 
     # 获取 PWA 头部 HTML
     pwa_head_html = _get_pwa_head_html(enable_pwa)
+
+    # 获取 PWA body HTML（导航栏等）
+    pwa_body_html = _get_pwa_body_html(enable_pwa)
 
     # 使用普通字符串 + 连接，避免 f-string 解析问题
     html = """
@@ -857,6 +876,7 @@ def render_html_content(
         </style>
     </head>
     <body>
+""" + pwa_body_html + """
         <div class="container">
             <div class="header">
                 <div class="save-buttons">
