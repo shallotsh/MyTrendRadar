@@ -263,23 +263,40 @@ class PWASupport:
         window.PWANavigation = (function() {
             // 检测是否在 standalone 模式
             function isStandalone() {
-                return window.matchMedia('(display-mode: standalone)').matches ||
-                       window.navigator.standalone === true ||
-                       document.referrer.includes('android-app://');
+                const isDisplayModeStandalone = window.matchMedia('(display-mode: standalone)').matches;
+                const isNavigatorStandalone = window.navigator.standalone === true;
+                const isAndroidApp = document.referrer.includes('android-app://');
+
+                // 调试日志
+                console.log('[PWA Nav] Detection:', {
+                    displayMode: isDisplayModeStandalone,
+                    navigatorStandalone: isNavigatorStandalone,
+                    androidApp: isAndroidApp,
+                    standalone: isDisplayModeStandalone || isNavigatorStandalone || isAndroidApp
+                });
+
+                return isDisplayModeStandalone || isNavigatorStandalone || isAndroidApp;
             }
 
             // 显示/隐藏导航栏
             function toggleNavbar() {
                 const navbar = document.getElementById('pwa-navbar');
                 if (navbar) {
-                    if (isStandalone()) {
+                    const standalone = isStandalone();
+                    console.log('[PWA Nav] Toggle navbar, standalone:', standalone);
+
+                    if (standalone) {
                         navbar.style.display = 'flex';
                         document.body.classList.add('pwa-standalone');
+                        console.log('[PWA Nav] Navbar shown');
                     } else {
                         navbar.style.display = 'none';
                         document.body.classList.remove('pwa-standalone');
+                        console.log('[PWA Nav] Navbar hidden');
                     }
                     updateBackButton();
+                } else {
+                    console.error('[PWA Nav] Navbar element not found!');
                 }
             }
 
@@ -316,7 +333,13 @@ class PWASupport:
 
             // 初始化
             function init() {
+                console.log('[PWA Nav] Initializing...');
+                // 立即检查一次
                 toggleNavbar();
+
+                // 延迟再检查一次，确保 DOM 完全加载
+                setTimeout(toggleNavbar, 100);
+
                 // 监听 display mode 变化
                 window.matchMedia('(display-mode: standalone)').addEventListener('change', toggleNavbar);
             }
@@ -332,7 +355,8 @@ class PWASupport:
                 goBack: goBack,
                 goHome: goHome,
                 refresh: refresh,
-                isStandalone: isStandalone
+                isStandalone: isStandalone,
+                toggleNavbar: toggleNavbar  // 暴露给外部用于调试
             };
         })();
     </script>
