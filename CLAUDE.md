@@ -6,7 +6,7 @@
 
 **TrendRadar** 是一个热点新闻聚合与分析工具。它从多个中文平台抓取热门话题，提供 AI 驱动的分析，并支持多种通知渠道。
 
-- **版本**: 5.5.0
+- **版本**: 5.5.2
 - **语言**: Python 3.10+
 - **许可证**: GPL-3.0
 - **入口**: `trendradar`（命令行工具），`trendradar-mcp`（MCP 服务器）
@@ -19,7 +19,7 @@
    - 主入口: `trendradar.__main__:main`
    - 从平台和 RSS 订阅源抓取热点新闻
    - 将数据存储在按日期组织的 SQLite 数据库中
-   - 生成 HTML 报告
+   - 生成 HTML 报告（支持 PWA）
    - 通过多种渠道发送通知
 
 2. **MCP 服务器** (`/mcp_server`)
@@ -36,17 +36,40 @@
 - **`/trendradar/storage/`**: 多后端存储（本地 SQLite + S3 兼容的远程存储）
 - **`/trendradar/notification/`**: 10+ 种通知渠道（飞书、微信、Telegram、邮件等）
 - **`/trendradar/report/`**: HTML 报告生成
+  - **`/trendradar/report/pwa/`**: PWA 支持（Service Worker、Manifest、导航栏）
 - **`/mcp_server/tools/`**: 6 大类工具（分析、搜索、数据查询、存储同步、配置管理、系统）
 
 ### AppContext 模式
 
-代码库使用 `AppContext` 类进行依赖注入，集中配置访问，并提供工厂方法用于创建存储管理器、通知分发器和报告生成器。
+代码库使用 `AppContext` 类进行依赖注入，集中配置访问，并提供工厂方法用于创建存储管理器、通知分发器和报告生成器。位置: `trendradar/context.py`
 
 ### 三种报告模式
 
 - **`daily`**（当日汇总）: 当天所有匹配的新闻 + 新增内容
 - **`current`**（当前榜单）: 当前正在热门的内容
 - **`incremental`**（增量监控）: 仅新增内容，无重复
+
+### PWA (Progressive Web App)
+
+HTML 报告支持 PWA 功能，可作为原生应用安装到桌面和移动设备。
+
+**PWA 文件结构**:
+- `trendradar/report/pwa/__init__.py`: PWASupport 类，生成 PWA 相关 HTML/CSS/JS
+- `trendradar/report/pwa/manifest.json`: PWA 清单文件
+- `trendradar/report/pwa/sw.js`: 基础版 Service Worker
+- `trendradar/report/pwa/sw-advanced.js`: 进阶版 Service Worker（支持离线缓存）
+- `trendradar/report/pwa/icons/`: PWA 图标（多种尺寸）
+- `trendradar/report/pwa/pwa-install.js`: 安装提示 UI 组件
+
+**部署要求**:
+- `sw.js` 和 `sw-advanced.js` 必须放在网站根目录 (`/`)，Service Worker 才能控制整个网站
+- `manifest.json` 需放在 `/pwa/manifest.json`
+- 图标需放在 `/pwa/icons/` 目录
+
+**PWA 导航栏**:
+- 在 standalone 模式下显示自定义导航栏（返回、主页、刷新按钮）
+- 解决 PWA 全屏模式无法使用浏览器后退按钮的问题
+- 使用 `window.matchMedia('(display-mode: standalone)')` 检测模式
 
 ## 运行项目
 
@@ -84,12 +107,14 @@ trendradar-mcp --transport http --host 0.0.0.0 --port 3333
 - `config/frequency_words.txt`: 关键词过滤分组
 - `config/ai_analysis_prompt.txt`: AI 分析提示词模板
 - `config/ai_translation_prompt.txt`: AI 翻译提示词模板
+- `trendradar/context.py`: AppContext 类，提供依赖注入和配置访问
 
 ## 数据存储
 
 - **SQLite**: `output/{type}/{date}.db` - 新闻和 RSS 数据的主存储
 - **HTML 报告**: `output/html/{date}/{time}.html` - 带时间戳的报告
 - **最新报告**: `output/html/latest/{mode}.html` - 每种模式的最新报告
+- **PWA 文件**: `output/pwa/` 和 `output/sw*.js` - PWA 资源文件
 
 ## AI 集成
 
@@ -117,3 +142,4 @@ MCP 服务器提供 21 个工具，分为 6 大类：
 - **多账号支持**: 使用分号 `;` 分隔同一渠道的多个账号
 - **代理设置**: GitHub Actions 环境通过 `advanced.crawler.use_proxy` 配置
 - **调试模式**: 在 config 中设置 `advanced.debug: true` 以获取详细错误追踪
+- **PWA Service Worker**: 必须部署在网站根目录，scope 为 `/` 才能控制整个网站
