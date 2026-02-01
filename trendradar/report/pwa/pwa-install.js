@@ -123,7 +123,7 @@
                     </svg>
                 </div>
                 <div class="pwa-prompt-text">
-                    <div class="pwa-prompt-title">安装 ${CONFIG appName}</div>
+                    <div class="pwa-prompt-title">安装 ${CONFIG.appName}</div>
                     <div class="pwa-prompt-desc">添加到主屏幕，获得原生应用体验</div>
                 </div>
                 <button class="pwa-prompt-btn-install" id="pwa-install-btn">安装</button>
@@ -168,7 +168,7 @@
                     </svg>
                 </div>
                 <div class="pwa-prompt-text">
-                    <div class="pwa-prompt-title">安装 ${CONFIG appName}</div>
+                    <div class="pwa-prompt-title">安装 ${CONFIG.appName}</div>
                     <div class="pwa-prompt-desc">
                         在 Safari 中点击
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="pwa-share-icon">

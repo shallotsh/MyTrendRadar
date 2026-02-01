@@ -7,8 +7,56 @@
 - generate_html_report: 生成 HTML 报告
 """
 
+import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Callable
+
+
+def _deploy_pwa_files(output_dir: Path, enable_pwa: bool = True):
+    """
+    部署 PWA 文件到输出目录
+
+    Args:
+        output_dir: HTML 文件所在的输出目录
+        enable_pwa: 是否启用 PWA 功能
+    """
+    if not enable_pwa:
+        return
+
+    # 源 PWA 目录
+    src_pwa_dir = Path(__file__).parent / "pwa"
+
+    # 目标 PWA 目录
+    dst_pwa_dir = output_dir / "pwa"
+
+    # 如果源目录不存在，跳过
+    if not src_pwa_dir.exists():
+        return
+
+    try:
+        # 复制 manifest.json
+        src_file = src_pwa_dir / "manifest.json"
+        if src_file.exists():
+            dst_pwa_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_file, dst_pwa_dir / "manifest.json")
+
+        # 复制 Service Worker 文件
+        for sw_file in ["sw.js", "sw-advanced.js", "pwa-install.js"]:
+            src_file = src_pwa_dir / sw_file
+            if src_file.exists():
+                shutil.copy2(src_file, dst_pwa_dir / sw_file)
+
+        # 复制 icons 目录
+        src_icons = src_pwa_dir / "icons"
+        if src_icons.exists():
+            dst_icons = dst_pwa_dir / "icons"
+            dst_icons.mkdir(parents=True, exist_ok=True)
+            for icon_file in src_icons.glob("*.png"):
+                shutil.copy2(icon_file, dst_icons / icon_file.name)
+
+    except Exception as e:
+        # 静默失败，不影响报告生成
+        pass
 
 
 def prepare_report_data(
@@ -154,6 +202,7 @@ def generate_html_report(
     render_html_func: Optional[Callable] = None,
     matches_word_groups_func: Optional[Callable] = None,
     load_frequency_words_func: Optional[Callable] = None,
+    enable_pwa: bool = True,
 ) -> str:
     """
     生成 HTML 报告
@@ -232,5 +281,11 @@ def generate_html_report(
     root_index = Path("index.html")
     with open(root_index, "w", encoding="utf-8") as f:
         f.write(html_content)
+
+    # 部署 PWA 文件到各个 HTML 所在目录
+    _deploy_pwa_files(snapshot_path, enable_pwa)  # 历史记录目录
+    _deploy_pwa_files(latest_dir, enable_pwa)     # latest 目录
+    _deploy_pwa_files(Path(output_dir), enable_pwa)  # output 目录
+    _deploy_pwa_files(Path("."), enable_pwa)      # 根目录
 
     return snapshot_file
