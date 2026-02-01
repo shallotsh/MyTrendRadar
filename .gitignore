@@ -1,4 +1,4 @@
-output/
+output/news/*
 .DS_Store
 .venv/
 .env
