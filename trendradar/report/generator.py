@@ -34,19 +34,24 @@ def _deploy_pwa_files(output_dir: Path, enable_pwa: bool = True):
         return
 
     try:
-        # 复制 manifest.json
+        # 复制 manifest.json 到 pwa 目录
         src_file = src_pwa_dir / "manifest.json"
         if src_file.exists():
             dst_pwa_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src_file, dst_pwa_dir / "manifest.json")
 
-        # 复制 Service Worker 文件
-        for sw_file in ["sw.js", "sw-advanced.js", "pwa-install.js"]:
+        # 复制 pwa-install.js 到 pwa 目录
+        src_install = src_pwa_dir / "pwa-install.js"
+        if src_install.exists():
+            shutil.copy2(src_install, dst_pwa_dir / "pwa-install.js")
+
+        # Service Worker 文件必须部署到根目录，才能控制整个网站
+        for sw_file in ["sw.js", "sw-advanced.js"]:
             src_file = src_pwa_dir / sw_file
             if src_file.exists():
-                shutil.copy2(src_file, dst_pwa_dir / sw_file)
+                shutil.copy2(src_file, output_dir / sw_file)
 
-        # 复制 icons 目录
+        # 复制 icons 目录到 pwa 目录
         src_icons = src_pwa_dir / "icons"
         if src_icons.exists():
             dst_icons = dst_pwa_dir / "icons"

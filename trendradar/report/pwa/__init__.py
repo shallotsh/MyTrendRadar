@@ -74,7 +74,9 @@ class PWASupport:
             JavaScript 代码字符串
         """
         sw_file = "sw-advanced.js" if self.use_advanced_sw else "sw.js"
-        sw_path = self.pwa_base_path + "/" + sw_file
+        # Service Worker 必须放在根目录，才能控制整个网站
+        # 不使用 self.pwa_base_path，直接使用根目录路径
+        sw_path = "/" + sw_file
 
         # 使用普通字符串和字符串连接，避免 f-string 的 { } 与 JavaScript 冲突
         return """
@@ -82,7 +84,7 @@ class PWASupport:
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('""" + sw_path + """', {
-                scope: './'
+                scope: '/'
             }).then(function(registration) {
                 console.log('[PWA] Service Worker 注册成功:', registration.scope);
 
