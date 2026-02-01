@@ -103,14 +103,15 @@ def render_html_content(
     # 获取 PWA 头部 HTML
     pwa_head_html = _get_pwa_head_html(enable_pwa)
 
-    html = f"""
+    # 使用普通字符串 + 连接，避免 f-string 解析问题
+    html = """
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>热点新闻分析</title>
-{pwa_head_html}
+""" + pwa_head_html + """
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <style>
             * { box-sizing: border-box; }
