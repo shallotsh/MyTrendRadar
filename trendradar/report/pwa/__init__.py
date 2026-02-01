@@ -39,7 +39,7 @@ class PWASupport:
 
     def get_manifest_link(self) -> str:
         """获取 manifest.json 的 link 标签"""
-        return f'<link rel="manifest" href="{self.pwa_base_path}/manifest.json">'
+        return '<link rel="manifest" href="' + self.pwa_base_path + '/manifest.json">'
 
     def get_meta_tags(self) -> str:
         """
@@ -50,12 +50,12 @@ class PWASupport:
         """
         meta_tags = [
             # 基础 PWA 设置
-            f'<meta name="theme-color" content="{self.theme_color}">',
+            '<meta name="theme-color" content="' + self.theme_color + '">',
 
             # iOS Safari 设置
             '<meta name="apple-mobile-web-app-capable" content="yes">',
             '<meta name="apple-mobile-web-app-status-bar-style" content="default">',
-            f'<meta name="apple-mobile-web-app-title" content="{self.app_name}">',
+            '<meta name="apple-mobile-web-app-title" content="' + self.app_name + '">',
 
             # Android Chrome 设置
             '<meta name="mobile-web-app-capable" content="yes">',
@@ -74,48 +74,50 @@ class PWASupport:
             JavaScript 代码字符串
         """
         sw_file = "sw-advanced.js" if self.use_advanced_sw else "sw.js"
+        sw_path = self.pwa_base_path + "/" + sw_file
 
-        return f"""
+        # 使用普通字符串和字符串连接，避免 f-string 的 { } 与 JavaScript 冲突
+        return """
     // Service Worker 注册
-    if ('serviceWorker' in navigator) {{
-        window.addEventListener('load', function() {{
-            navigator.serviceWorker.register('{self.pwa_base_path}/{sw_file}', {{
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('""" + sw_path + """', {
                 scope: './'
-            }}).then(function(registration) {{
+            }).then(function(registration) {
                 console.log('[PWA] Service Worker 注册成功:', registration.scope);
 
                 // 检查更新
-                registration.addEventListener('updatefound', function() {{
+                registration.addEventListener('updatefound', function() {
                     const newWorker = registration.installing;
-                    if (newWorker) {{
-                        newWorker.addEventListener('statechange', function() {{
-                            if (this.state === 'installed' && navigator.serviceWorker.controller) {{
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', function() {
+                            if (this.state === 'installed' && navigator.serviceWorker.controller) {
                                 console.log('[PWA] 发现新版本，请刷新页面更新');
                                 // 可以在这里显示更新提示
-                                if (window.PWAUpdatePrompt) {{
+                                if (window.PWAUpdatePrompt) {
                                     window.PWAUpdatePrompt.show();
-                                }}
-                            }}
-                        }});
-                    }}
-                }});
+                                }
+                            }
+                        });
+                    }
+                });
 
-            }}).catch(function(error) {{
+            }).catch(function(error) {
                 console.error('[PWA] Service Worker 注册失败:', error);
-            }});
-        }});
+            });
+        });
 
         // 监听 Service Worker 控制变化
         let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', function() {{
-            if (!refreshing) {{
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (!refreshing) {
                 refreshing = true;
                 window.location.reload();
-            }}
-        }});
-    }} else {{
+            }
+        });
+    } else {
         console.warn('[PWA] 当前浏览器不支持 Service Worker');
-    }}
+    }
 """
 
     def get_install_prompt_script(self) -> str:
